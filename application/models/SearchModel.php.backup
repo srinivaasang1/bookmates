@@ -1,0 +1,72 @@
+<?php
+
+/**
+ * Created by PhpStorm.
+ * User: TomLiu
+ * Date: 5/04/2016
+ * Time: 9:50 PM
+ */
+class SearchModel extends CI_Model
+{
+    public function getData($limit, $offset,$keywords){
+//        if($keywords='NIL'){
+//            $keywords="";
+//        }
+//        $this->db->select ( '*' );
+//        $this->db->from ( 'events' );
+//        $this->db->join ( 'books', 'events.book_isbn = books.book_isbn' );
+//        $this->db->join ( 'venues', 'events.venue_id = venues.venue_id' );
+////        $this->db->like('venues.venue_name',$keywords);
+//        $this->db->order_by('events.event_datetime','desc');
+//        $this->db->limit($limit,$offset);
+
+        $query = $this->db->get ();
+
+            $sql = "select * from events e
+
+                             where e.venue_address like '%$keywords%' limit ".$limit
+                            ." offset ".$offset;
+            $query = $this->db->query($sql);
+        $eventsResult=[];
+        if($query->num_rows()>0){
+            foreach($query->result() as $row){
+                array_push($eventsResult,$row);
+            }
+        }else{
+            $eventsResult[]="Result Not Found";
+        }
+        return $eventsResult;
+
+//            return $query->result();
+    }
+    public function countRowsForSearch($keywords){
+        if($keywords == 'NIL'){
+            $keywords="";
+        }
+        $this->db->select ( '*' );
+        $this->db->from ( 'events' );
+
+        $this->db->like('events.venue_address',$keywords);
+
+        $query = $this->db->get();
+        return $query->num_rows();
+    }
+    public function countAll(){
+        return $this->db->count_all('events');
+    }
+
+//        public function getSearchResults($keywords,$description = TRUE){
+//
+//
+//            $this->db->select ( '*' );
+//            $this->db->from ( 'events' );
+//            $this->db->join ( 'books', 'events.book_isbn = books.book_isbn' );
+//            $this->db->join ( 'venues', 'events.venue_id = venues.venue_id' );
+//            $this->db->like('venues.venue_name',$keywords);
+//            $this->db->order_by('events.event_datetime','desc');
+//
+//
+//            $query = $this->db->get ();
+//            return $query->result();
+//        }
+}

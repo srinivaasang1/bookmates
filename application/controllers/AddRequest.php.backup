@@ -1,0 +1,84 @@
+
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+/**
+ * Created by PhpStorm.
+ * User: TomLiu
+ * Date: 12/04/2016
+ * Time: 5:28 PM
+ */
+class AddRequest extends CI_Controller
+{
+    public function index(){
+
+        $this->load->view('navbar');
+        $this->load->view('addRequestView');
+        $this->load->view('footer');
+        $this->load->helper('date');
+    }
+
+
+    public function createRequest(){
+
+        $this->load->library('form_validation');
+        // Including Validation Library
+        // Displaying Errors In Div
+        $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
+
+
+//        $data = array(
+//            'user_id' => $this->input->post('userid'),
+//            'request_booktitle' => $this->input->post('title')
+//        );
+
+        $requestPostingRules = [
+            [   'field'=>'userid',
+                'label'=>'User ID',
+                'rules'=>'required|trim|min_length[1]'
+            ],
+            [   'field'=>'title',
+                'label'=>'Book Title',
+                'rules'=>'required|trim|min_length[1]'
+            ]
+        ];
+        //change default message for required rule
+//        $this->form_validation->set_rules('time', 'Time', 'callback_check_time');
+        $this->form_validation->set_message('required','%s can not be empty!');
+
+        $this->form_validation->set_rules($requestPostingRules);
+
+
+        if($this->form_validation->run()==FALSE){
+            //show error information
+            $validationRules = array(
+                'book_title'=>form_error('title'),
+                'user_id'=>form_error('userid')
+            );
+
+//            $this->load->view('addEventView');
+
+            echo json_encode($validationRules);
+        } else{
+            $this->load->model('AddRequestModel');
+            $result = $this->AddRequestModel->insert_request();
+
+            echo json_encode(['success'=>'Your request was successfully submitted!']);
+        }
+    }
+
+
+    //The method deals with book title selection in ajax
+    public function searchBookByTitle() {
+
+        $data = array(
+            'booktitle' => $this->input->post('booktitle')
+        );
+
+
+        $url = "https://www.googleapis.com/books/v1/volumes?q=".urlencode($data['booktitle'])."&orderBy=relevance&projection=lite";
+        $page = file_get_contents($url);
+        $data1 = json_decode($page, true);
+        echo json_encode($data1['items']);
+
+    }
+}

@@ -1,0 +1,225 @@
+
+
+<style>
+			.error {
+				color:red;
+				font-size:13px;
+				margin-bottom:-15px;
+			}
+			#totalRowNum{
+				color:blue;
+				font-size:20px;
+				margin-bottom: -15px;;
+			}
+</style>
+
+<!--		calendar setting -->
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/css/bootstrap-datepicker.css" rel="stylesheet"/>
+<!-- js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/js/bootstrap-datepicker.js"></script>
+<!--	</head>-->
+<!--	<body data-spy="scroll" data-target=".main-nav">-->
+<!--		filter -->
+				<section id="filter">
+				</section>
+
+		<section class="about" id="about">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<h2 class="create-form-heading">LIST OF EVENTS</h2>
+
+						<?php echo form_open('ListEvent/searchWithCriteria', array('id'=>'searchForm')); ?>
+
+						<div class="row mb90">
+							<div class="col-md-2">
+
+							</div>
+							<div class="col-md-5">
+								<div>
+								<label><input type="checkbox" value="location" name="criteria[]" id="location"> City, State</label>
+									&nbsp <input type="text"  id="searchKeyword" name = "searchKeyword" value="<?php echo set_value('searchKeyword')?>" placeholder="    City, State ....">
+									<br>
+								<label><input type="checkbox" value="calendarDay" name="criteria[]" id="calendarDay"> Calendar Day</label>
+									<br><div id="errorShownForEmptySearch"  class="error"></div>
+								</div>
+								<div id="datetimepicker" name="timeConstraint" style="width: 50%; height: 40%"></div><br>
+								 <span style="padding-left:10px"><input type="text" id="timecon" name="timecon" value="<?php echo set_value('timecon',$dayconstraint); ?>"/></span>
+							</div>
+							<div class="col-md-5">
+								<input type="submit" id="searchBtn" class="btn-primary" value="Search" >
+								<div id="totalRowNum"  style="display: none"> <?php echo $totalRow?> events are found!</div>
+							</div>
+
+						</div>
+						<?php echo form_close(); ?>
+
+						<?php
+						if($eventList==false){?>
+							<div style="color: red; font-size: 16px">
+								<div class="col-md-5">
+								</div>
+
+								<div class="col-md-7">
+									<b>No Events Found!</b>
+								</div>
+							</div>
+							<?php
+						}else{ ?>
+							<?php
+							foreach($eventList as $event){ ?>
+								<?php
+								$eventtimestamp = strtotime($event->event_datetime);
+								$eventdate = date('l, M d,  Y', $eventtimestamp);
+								$eventtime = date('h:i A',$eventtimestamp);
+								?>
+
+								<div class="row mb90">
+									<div class="col-md-2"></div>
+									<div class="col-md-3">
+										<div class="cal-date" style="font-size: medium"><?=$eventdate?></div><div class="cal-date"> <br/><?=$eventtime?></div>
+										<br/>
+										<a href="<?php echo base_url(); ?>index.php/EventDetail?var=<?php echo $event->event_id;?>"><button class="btn-join" >Join us</button></a>
+									</div>
+
+									<div class="col-md-5">
+										<div class="list-group">
+											<a  class="list-group-item">
+												<h3 class="list-group-item-heading"><?php echo $event->book_title; ?></h3>
+											</a>
+											<a  class="list-group-item">
+												<h3 class="list-group-item-heading"> <?php echo $event->venue_address; ?></h3>
+											</a>
+											<a  class="list-group-item">
+												<h3 class="list-group-item-heading"> <b style="color:dodgerblue;"><?php echo $event->listener_count; ?> </b> participants are going!</h3>
+											</a>
+										</div>
+									</div>
+									<div class="col-md-2"></div>
+
+								</div>
+								<?php
+							}
+						}
+						?>
+
+
+						<div id="pagination_div">
+
+							<!-- Show pagination links -->
+
+							<div style="color: red; font-size: 16px">
+
+
+								<div class="col-md-5">
+								</div>
+
+								<div class="col-md-7">
+									<b><?php echo $links; ?></b>
+								</div>
+							</div>
+
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+
+
+
+
+
+<script type="text/javascript">
+
+	$(function () {
+	//search result
+		<?php if(isset($_SESSION['isClicked'])){ ?>
+			$("#totalRowNum").removeAttr("style");
+		<?php
+		} ?>
+
+
+//calendar
+		$('#datetimepicker').datepicker({
+			inline: true,
+			sideBySide: true,
+			format : 'YYYY-MM-DD',
+//			minDate:today,
+			useCurrent:false,
+			todayHightlight:true
+
+		}).on("changeDate", function (e) {
+			var date = $('#datetimepicker').datepicker('getDate');
+			var formatted = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() ;
+			$('#timecon').val(formatted);
+			$('#datetimepicker').hide();
+		});
+
+	});
+
+	//initial setting of checkbox,calendar, and searchbox
+	$('#datetimepicker').hide();
+	$('#timecon').hide();
+	$('#searchKeyword').hide();
+
+
+	//calendar change
+	//test whether the box is checked
+	$('#calendarDay').change(function(){
+
+		this.checked ? $('#datetimepicker').show() : $('#datetimepicker').hide();
+		this.checked ? $('#timecon').show() : $('#timecon').hide();
+	});
+	$('#location').change(function(){
+		this.checked ? $('#searchKeyword').show() : $('#searchKeyword').hide();
+	});
+
+	<!--test whether the box is ticked-->
+	$('#searchBtn').click(function(){
+
+		$('#errorShownForEmptySearch').empty();
+		var isLocationChecked = $('#location').is(":checked");
+		var isCalendarChecked = $('#calendarDay').is(":checked");
+		console.log(isCalendarChecked+" cal- loc "+isLocationChecked);
+		if(isCalendarChecked==false && isLocationChecked==false){
+			$('#errorShownForEmptySearch').text("Please choose search criteria!");
+//			alert("Please choose search criteria!");
+			return false;
+		}else if(isCalendarChecked && ($('#timecon').val().length===0 || $('#timecon').val()==="")&&isLocationChecked==false){
+			$('#errorShownForEmptySearch').text("Please choose a day from calendar!");
+			return false;
+		}else if(isLocationChecked && ($('#searchKeyword').val().length==0 || $('#searchKeyword').val()==="")&& isCalendarChecked==false){
+			$('#errorShownForEmptySearch').text("Please fill in an event location search key word!");
+			return false;
+		}else if(isLocationChecked && ($('#searchKeyword').val().length==0||$('#searchKeyword').val()==="") && isCalendarChecked && ($('#timecon').val().length==0|| $('#timecon').val()==="")){
+			$('#errorShownForEmptySearch').text("Please fill in an event location and choose an event time to search for events!");
+			return false;
+		}else if(isLocationChecked&& isCalendarChecked && $('#searchKeyword').val().length==0){
+			$('#errorShownForEmptySearch').text("Please fill in an event location search key word!");
+			return false;
+		} else if(isLocationChecked&& isCalendarChecked && $('#timecon').val().length==0){
+			$('#errorShownForEmptySearch').text("Please choose a day from calendar!");
+			return false;
+		}
+		else{
+			<?php $_SESSION['isClicked']=true;?>
+		}
+
+
+	});
+	//when input field is clicked calendar will pop up
+	$( "#timecon" ).focus(function() {
+		$('#datetimepicker').show();
+	});
+
+
+
+</script>
+
+
+<!--	</body>-->
+
+

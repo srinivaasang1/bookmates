@@ -1,0 +1,45 @@
+
+<?php
+
+/**
+ * Created by PhpStorm.
+ * User: TomLiu
+ * Date: 12/04/2016
+ * Time: 5:34 PM
+ */
+class AddRequestModel extends CI_Model
+{
+    function __construct()
+    {
+        parent::__construct();
+    }
+    public function insert_request()
+    {
+
+        $data = array(
+            'user_id' => $this->input->post('userid'),
+            'request_datetime' => date('Y-m-d H:i:s'),
+            'book_isbn' => $this->input->post('request_isbn'),
+            'request_book_title' => $this->input->post('title')
+        );
+
+         $this->db->insert('requests', $data);
+        return true;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
